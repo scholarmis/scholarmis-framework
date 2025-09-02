@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scholarmis-framework"
+version = "0.1.0"
+description = "Scholarmis Framework"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Scholarmis Team", email = "dev@scholarmis.com" }]
+dependencies = [
+  "pip-tools>=7.5",
+  "Django>=5.1",
+  "importlib-metadata>=8.7",
+  "click>=8.2",
+  "requests>=2.32",
+  "semver>=3.0",
+]
+[project.scripts]
+scholarmis = "scholarmis.framework.commands:cli"

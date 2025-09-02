@@ -1,0 +1,14 @@
+from django.apps import AppConfig
+
+class {class_name}Config(AppConfig):
+    name = "{module_name}"
+    label = "{module_label}"
+    verbose_name = "{verbose_name}"
+    url = None
+    icon = None
+
+   
+app_name = {class_name}Config.name 
+app_label = {class_name}Config.label
+verbose_name = {class_name}Config.verbose_name
+

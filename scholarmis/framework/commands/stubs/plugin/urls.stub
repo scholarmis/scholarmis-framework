@@ -1,0 +1,9 @@
+from django.urls import path
+from .apps import app_label
+from . import views
+
+app_name = app_label
+
+urlpatterns = [
+
+]

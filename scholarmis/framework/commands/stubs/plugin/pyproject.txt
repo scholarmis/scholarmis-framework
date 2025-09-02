@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "{plugin.repo_name}"
+version = "0.1.0"
+description = "{plugin.verbose_name} plugin"
+readme = "README.md"
+license = {{ text = "MIT" }}
+authors = [{{ name = "{plugin.author}", email = "{plugin.author_email}" }}]
+dependencies = [
+  
+]

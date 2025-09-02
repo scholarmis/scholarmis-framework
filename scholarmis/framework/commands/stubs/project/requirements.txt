@@ -1,0 +1,52 @@
+# Web servers
+gunicorn>=23
+
+# Database
+psycopg>=3.2
+psycopg-binary>=3.2
+
+# Utilities
+python-slugify>=8
+Pillow>=11.3
+rcssmin>=1.1
+argon2-cffi>=25
+whitenoise>=6.9
+redis>=5.0.8
+hiredis>=3.2
+channels-redis>=4.3.0
+channels>=4.3.1
+
+# Task queue
+celery[redis]>=5.5
+django-celery-beat>=2.8
+django-celery-results>=2.6
+
+# ASGI server
+uvicorn[standard]>=0.35
+uvicorn-worker>=0.3
+
+# Django
+django>=5.1,<6.0
+django-environ>=0.12
+django-model-utils>=5.0
+django-allauth[mfa]>=65.11
+django-defender>=0.9
+django-crispy-forms>=2.4
+crispy-tailwind>=1.0
+django-compressor>=4.5
+django-redis>=6.0
+django-qr-code>=4.2
+djangorestframework>=3.16
+django-cors-headers>=4.7
+drf-spectacular>=0.28
+django-storages>=1.14
+django-anymail>=13
+django-countries>=7.6
+django-filter>=25.1
+django-recaptcha>=4.1
+django-renderpdf>=5.0
+django-simple-menu>=2.1
+django-tables2>=2.7
+django-import-export>=4.3
+django-import-export-extensions>=1.8
+django-notifications-hq>=1.8.3

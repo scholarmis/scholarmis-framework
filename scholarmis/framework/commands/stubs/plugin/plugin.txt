@@ -1,0 +1,8 @@
+{{
+    "name": "{plugin.pkg_name}", 
+    "version": "{plugin.version}", 
+    "author": "{plugin.author}", 
+    "author_email": "{plugin.author_email}", 
+    "license":"{plugin.license}",
+    "requires": []
+}}
