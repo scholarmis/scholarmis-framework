@@ -14,12 +14,8 @@ class MediaStorage(FileSystemStorage):
 
     def __init__(self, *args, **kwargs):
         """
-        Initialize the TenantMediaStorage by setting the appropriate media root and URL 
+        Initialize the MediaStorage by setting the appropriate media root and URL 
         based on the current tenant's schema name.
-
-        Args:
-            request (HttpRequest, optional): If passed, will use the tenant from the request. 
-                Otherwise, uses the tenant schema from the current connection.
         """
 
         # Define tenant-specific media directory
