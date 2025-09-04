@@ -12,10 +12,12 @@ authors = [{ name = "Scholarmis Team", email = "dev@scholarmis.com" }]
 dependencies = [
   "pip-tools>=7.5",
   "Django>=5.1",
+  "django-model-utils>=5.0",
   "importlib-metadata>=8.7",
   "click>=8.2",
   "requests>=2.32",
   "semver>=3.0",
+  "premailer>=3.10",
 ]
 [project.scripts]
 scholarmis = "scholarmis.framework.commands:cli"
