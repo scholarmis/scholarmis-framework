@@ -1,8 +1,8 @@
 import importlib
 import inspect
 import logging
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Type
 from scholarmis.framework.exceptions import ServiceAlreadyRegisteredError
 from scholarmis.framework.services import ServiceRegistry
