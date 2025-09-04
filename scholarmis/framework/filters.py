@@ -1,12 +1,9 @@
 import json
-import logging
 from pathlib import Path
 from typing import Dict, Optional
 from django.db.models import Q, QuerySet, Model # type: ignore
 from django.apps import apps # type: ignore
 from django.core.cache import cache # type: ignore
-
-logger = logging.getLogger(__name__)
 
 
 class FilterContextLoader:
@@ -66,17 +63,14 @@ class FilterContextLoader:
         If file is missing or invalid, return {} instead of raising.
         """
         if not self.file_path.exists():
-            logger.warning("Filter file not found: %s", self.file_path)
             return {}
         
         try:
             with self.file_path.open("r", encoding="utf-8") as file:
                 return json.load(file)
         except json.JSONDecodeError as e:
-            logger.error("Error decoding JSON in %s: %s", self.file_path, e)
             return {}
         except Exception as e:
-            logger.exception("Unexpected error reading %s: %s", self.file_path, e)
             return {}
 
     def load_filter_context(self) -> Dict:

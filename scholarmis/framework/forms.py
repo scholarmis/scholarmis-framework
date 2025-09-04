@@ -12,7 +12,6 @@ DOC_MIMETYPES = ",".join([
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 ])
 
-
 class DocumentField(forms.FileField):
 
     def __init__(self, allowed_extensions=None, accepted_mimetypes=None, label=None, required=False, **kwargs):
@@ -36,6 +35,15 @@ class MultipleDocumentsField(forms.FileField):
 
         super().__init__(label=label, required=required, **kwargs)
 
+
+class ImportExcelForm(forms.Form):
+    file = forms.FileField(
+        widget=forms.FileInput(attrs={"accept": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),
+        required=True,
+        label="Excel File",
+        validators=[FileExtensionValidator(allowed_extensions=["xlsx", "xls"])],
+    )
+    
 
 class FormFieldsMixin:
    
