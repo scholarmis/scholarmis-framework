@@ -42,11 +42,11 @@ class JsonObject:
 def to_json(obj):
     # Convert any object to a dictionary and return a JsonObject instance
     if isinstance(obj, dict):
-        return JsonObject(obj)
+        return JsonObject(obj).to_json()
     else:
         return JsonObject(obj.__dict__)
 
 
 def from_json(json_str):
     # Deserialize a JSON string into a JsonObject
-    return JsonObject(json.loads(json_str))
+    return JsonObject(json.loads(json_str)).to_dict()
