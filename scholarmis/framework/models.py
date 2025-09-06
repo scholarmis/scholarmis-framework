@@ -1,6 +1,9 @@
 import os
+import re
+import json
 import semver # type: ignore
 from slugify import slugify
+from datetime import datetime, date, time
 from django.db import connection, models # type: ignore
 from django.core.exceptions import ValidationError # type: ignore
 from django_countries.fields import CountryField # type: ignore
@@ -378,6 +381,110 @@ class Versionable(BaseModel):
         self.full_clean()  # Calls the clean() method
 
         super().save(*args, **kwargs)
+
+
+class BaseConfig(UUIDModel):
+    DATA_TYPE_CHOICES = [
+        ("string", "String"),
+        ("integer", "Integer"),
+        ("boolean", "Boolean"),
+        ("list", "List"),
+        ("date", "Date"),
+        ("datetime", "DateTime"),
+        ("time", "Time"),
+    ]
+
+    name = models.CharField(max_length=255, unique=True, help_text="Configuration item name, must be unique")
+    label = models.CharField(max_length=255, blank=True, null=True,help_text="Optional display label for this setting")
+    value = models.CharField(max_length=255, blank=True, null=True, help_text="Current configuration value, modifiable by the user")
+    type = models.CharField(max_length=50, choices=DATA_TYPE_CHOICES, help_text="Data type acceptable for this configuration item")
+    default = models.CharField(max_length=255, blank=True, null=True, help_text="Default value if configuration value is empty or nullable")
+    options = models.JSONField(default=dict, null=True, blank=True, help_text="Acceptable values for the configuration item (as a dictionary)")
+    group = models.CharField(max_length=255, blank=True, null=True, help_text="Group name to organize related settings")
+
+    class Meta:
+        abstract = True
+
+    @property
+    def setting_value(self):
+        return self.get_effective_value()
+
+    def __str__(self):
+        return f"{self.name} ({self.type})"
+    
+    def save(self, *args, **kwargs):
+        # Set the label if it"s empty, using the name field as a basis
+        if not self.label and self.name:
+            # You can customize this label generation logic as needed
+            self.label = re.sub(r"[_-]", " ", self.name).title()  # Replaces underscores/dashes with spaces and capitalizes the words   
+        super().save(*args, **kwargs)
+
+    def get_display_name(self):
+        """Return the label if available, otherwise fall back to the name."""
+        return self.label if self.label else self.name
+
+    def parse_value(self, value, data_type):
+        """Parse the value based on the data type."""
+        if data_type == "integer":
+            return int(value)
+        elif data_type == "boolean":
+            return str(value).lower() in ["true", "1", "yes"]
+        elif data_type == "list":
+            try:
+                return json.loads(value)
+            except json.JSONDecodeError:
+                return []
+        elif data_type == "date":
+            return datetime.strptime(value, "%Y-%m-%d").date()
+        elif data_type == "datetime":
+            return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+        elif data_type == "time":
+            return datetime.strptime(value, "%H:%M:%S").time()
+        return value
+
+    def format_value(self, value, data_type):
+        """Format the value to a string representation based on the data type."""
+        if data_type in ["date", "datetime", "time"]:
+            return value.isoformat() if isinstance(value, (date, datetime, time)) else str(value)
+        return str(value)
+
+    def get_effective_value(self):
+        """Returns the current value or default if the value is not set."""
+        return self.get_value() if self.value else self.get_default_value()
+
+    def get_value(self):
+        """Parse the value field based on its type."""
+        if not self.value:
+            return None
+        return self.parse_value(self.value, self.type)
+
+    def get_default_value(self):
+        """Parse the default field based on its type."""
+        if not self.default:
+            return None
+        return self.parse_value(self.default, self.type)
+
+    def get_options(self):
+        """Retrieve acceptable options as a dictionary."""
+        return self.options or {}
+
+    def has_options(self):
+        """Check if the setting has predefined options."""
+        return bool(self.options)
+
+    def get_option_value(self, option):
+        """Retrieve the value of a specific option key."""
+        return self.get_options().get(option)
+
+    def set_value(self, value):
+        """Set the value and ensure its formatted correctly for storage."""
+        self.value = self.format_value(value, self.type)
+        self.save()
+
+    def set_default_value(self, value):
+        """Set the default value and ensure its formatted correctly for storage."""
+        self.default = self.format_value(value, self.type)
+        self.save()
 
 
 class Person(BaseModel):
