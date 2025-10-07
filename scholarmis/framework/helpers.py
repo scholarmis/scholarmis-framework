@@ -16,7 +16,7 @@ from django.urls import reverse, NoReverseMatch # type: ignore
 from urllib.parse import urljoin, urlparse # type: ignore
 from django.http import HttpRequest, HttpResponse, Http404 # type: ignore
 from django.conf import settings # type: ignore
-from django.shortcuts import redirect, render # type: ignore
+from django.shortcuts import redirect # type: ignore
 from django.templatetags.static import static # type: ignore
 
 
@@ -26,13 +26,6 @@ def safe_unregister(model):
         admin.site.unregister(model)
     except NotRegistered:
         pass
-
-
-def get_task_feedback(message=None):
-    if message:
-        return message
-    return "The task has started, and you will be notified once it is complete."
-
 
 def get_domain_name():
     domain = getattr(settings, 'DJANGO_HOST')
@@ -114,7 +107,6 @@ def get_template_name(template_path, app_name=None):
     else:
         return template_path
 
-
 def get_user_from_context(context):
     request = context['request']
     user = request.user
@@ -127,25 +119,21 @@ def get_user_from_context(context):
         return None
     return user
         
-    
 def get_file_path(file_name, app_name=None):
     if app_name is None:
         return file_name
     else:
         return f"{app_name}/{file_name}"
     
-
 def get_view_name(view_name, app_name=None):
     if app_name is None:
         return view_name
     else:
         return f"{app_name}:{view_name}" 
     
-
 def menu_action(app_name, action):
     view_name = get_view_name(action, app_name)
     return reverse(view_name)
-
 
 def download(path):
     file_path = os.path.join(settings.MEDIA_ROOT, path)
@@ -159,7 +147,6 @@ def download(path):
             return response
     raise Http404
 
-
 def format_number(amount, decimal_places=0, thousand_separator=','):
     # Format the number with specified decimal places and thousand separators
     return f"{amount:,.{decimal_places}f}".replace(",", thousand_separator)
@@ -167,12 +154,10 @@ def format_number(amount, decimal_places=0, thousand_separator=','):
 def random_number(length):
     return str(randint(0, 10**length-1)).zfill(length)
 
-
 def random_string(length):
     letters = string.ascii_uppercase
     random_string = ''.join(random.choice(letters) for i in range(length))
     return random_string
-
 
 def reference_number(length=16, date_format='%Y%m%d'):
     # Generate a UUID and convert it to a base64 string
@@ -185,7 +170,6 @@ def reference_number(length=16, date_format='%Y%m%d'):
 
     # Return the reference number up to the specified length
     return combined_ref[:length]
-
 
 def normalize(phrase: str) -> str:
     lowercase_words = {
@@ -243,25 +227,6 @@ def year_choices(min_value = None):
     if not min_value:
         min_value = 1920
     return [(r, r) for r in range(min_value, datetime.today().year+1)]
-
-
-def show_feedback(request, message, title=None, redirect_url=None, success=True, app_name=None):
-    if not app_name:
-        template = "scholarmis/feedback.html"
-    else:
-        template = get_template_name("feedback.html", app_name)
-    context = {
-        'message': str(message),
-        'success': success,
-        'title': title,
-        'redirect_url': redirect_url
-    }
-    return render(request, template, context)
-
-
-def show_success(request, message, redirect_url=None, app_name=None):
-    title = "Operation successful!"
-    return show_feedback(request=request, message=message, title=title, redirect_url=redirect_url, app_name=app_name)
 
 
 def get_choice_index(selected_value, choices):

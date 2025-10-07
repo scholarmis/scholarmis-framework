@@ -1,14 +1,11 @@
 import os
-import logging
 from django.conf import settings # type: ignore
 from django.core.exceptions import ValidationError # type: ignore
 from django.core.validators import validate_email # type: ignore
 from django.core.mail import EmailMessage # type: ignore
 from django.template.loader import render_to_string # type: ignore
 from premailer import transform  # type: ignore
-
-
-logger = logging.getLogger(__name__)
+from .logging import logger
 
 
 class Email:

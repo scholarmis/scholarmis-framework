@@ -1,4 +1,5 @@
 import json
+import django_filters
 from pathlib import Path
 from typing import Dict, Optional
 from django.db.models import Q, QuerySet, Model # type: ignore
@@ -54,7 +55,7 @@ class FilterContextLoader:
         """
         Get absolute path for the filter.json file.
         """
-        relative_path = self.filter_dir / self.filter_file
+        relative_path = f"{self.filter_dir} / {self.filter_file}"
         return self._get_absolute_path(relative_path)
 
     def _load_from_file(self) -> Dict:
@@ -87,6 +88,16 @@ class FilterContextLoader:
 
         return filter_context
 
+
+class OptionModelFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(field_name="name", lookup_expr="icontains")
+    value = django_filters.CharFilter(field_name="value", lookup_expr="icontains")
+    slug = django_filters.CharFilter(field_name="slug", lookup_expr="icontains")
+    code = django_filters.CharFilter(field_name="code", lookup_expr="icontains")
+
+    class Meta:
+        model = None  # to be defined in subclass
+        fields = ["id", "name", "value", "slug", "code"]
 
 
 def dynamic_filter(model_class: Model, filters, **kwargs) -> QuerySet:

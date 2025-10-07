@@ -499,7 +499,7 @@ class Person(BaseModel):
     date_of_birth = models.DateField(blank=True, null=True)
     marital_status = models.CharField(max_length=255, choices=MARITAL_LIST, blank=True, null=True)
     contact_address = models.CharField(max_length=255, blank=True, null=True)
-    physical_address = models.CharField(max_length=255, blank=True, null=True)
+    residential_address = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=255, blank=True, null=True)
     country = CountryField(blank_label="(Select country)", blank=True, null=True)
 
@@ -515,7 +515,7 @@ class Person(BaseModel):
         "date_of_birth",
         "marital_status",
         "contact_address",
-        "physical_address",
+        "residential_address",
         "city",
         "country",
     ]
@@ -523,3 +523,38 @@ class Person(BaseModel):
     class Meta:
         abstract = True
 
+
+class ProcessStatus(models.TextChoices):
+    PENDING = "Pending"
+    PROCESSING = "Processing"
+    READY = "Ready"
+    ERROR = "Error"
+
+
+class ProcessStatusMixin:
+
+    def set_pending(self):
+        self.status = ProcessStatus.PENDING
+    
+    def set_processing(self):
+        self.status = ProcessStatus.PROCESSING
+
+    def set_ready(self):
+        self.status = ProcessStatus.READY
+
+    def set_error(self, error):
+        self.error = error
+        self.status = ProcessStatus.ERROR
+
+    def is_pending(self):
+        return self.status == ProcessStatus.PENDING
+        
+    def is_processing(self):
+        return self.status == ProcessStatus.PROCESSING
+        
+    def is_ready(self):
+        return self.status == ProcessStatus.READY
+
+    def is_error(self):
+        return self.status == ProcessStatus.ERROR
+   

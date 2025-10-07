@@ -2,7 +2,7 @@ import os
 from uuid import uuid4
 from PIL import Image
 from django.utils.deconstruct import deconstructible # type: ignore
-from .storage import MediaStorage
+from .storage import TenantMediaStorage as Storage
 
 
 @deconstructible
@@ -20,8 +20,8 @@ class FileUploadPath:
         
 
 def save_uploaded_file(request, uploaded_file, upload_path="uploads", rename=True):
-    file_upload = MediaStorage()
-    saved_file_path = file_upload.upload(uploaded_file, upload_path, rename)
+    storage = Storage()
+    saved_file_path = storage.upload(uploaded_file, upload_path, rename)
     return saved_file_path
 
 
@@ -34,8 +34,8 @@ def remove_uploaded_file(file_path):
             print(f"Error deleting file: {e}")
 
 def storage_path(path):
-    media = MediaStorage()
-    return media.storage_path(path)
+    storage = Storage()
+    return storage.storage_path(path)
 
 
 def resize_image(image_path, size, format='PNG', quality=90):

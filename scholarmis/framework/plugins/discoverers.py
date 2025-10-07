@@ -108,6 +108,94 @@ class PluginDiscoverer(ABC):
 
 
 
+class DefaultDiscoverer(PluginDiscoverer):
+
+    def __init__(self, extensions: Optional[List[PluginMetadataExtension]] = None):
+        super().__init__(extensions)
+        self.project_root = self.detect_project_root()
+        self.scholarmis_path = self.project_root / "scholarmis"
+
+        if not self.scholarmis_path.exists():
+            logger.warning(f"No 'scholarmis' folder found in detected project root: {self.project_root}")
+
+    def detect_project_root(self) -> Path:
+        """Automatically find the project root containing 'scholarmis/'."""
+        current_path = Path(__file__).resolve()
+        for parent in current_path.parents:
+            if (parent / "scholarmis").is_dir():
+                logger.debug(f"Detected Scholarmis project root at {parent}")
+                return parent
+
+        logger.warning("Could not auto-detect project root; defaulting to CWD.")
+        return Path.cwd()
+
+    def discover(self) -> List[PluginMetadata]:
+        discovered: List[PluginMetadata] = []
+        processed_folders = set()
+
+        if not self.scholarmis_path.exists():
+            logger.warning(f"Skipping discovery: scholarmis path does not exist at {self.scholarmis_path}")
+            return []
+
+        logger.info(f"Discovering built-in plugins in {self.scholarmis_path}")
+
+        for subfolder in self.scholarmis_path.iterdir():
+            if not subfolder.is_dir():
+                continue
+            if subfolder in processed_folders:
+                continue
+
+            plugin_json = subfolder / "plugin.json"
+            apps_py = subfolder / "apps.py"
+
+            try:
+                if plugin_json.exists():
+                    metadata_obj = self.load_metadata(plugin_json, subfolder)
+                elif apps_py.exists():
+                    metadata_obj = self.create_metadata_from_apps(subfolder)
+                else:
+                    continue  # skip folders without plugin.json or apps.py
+
+                discovered.append(self.extend(metadata_obj))
+                processed_folders.add(subfolder)
+                logger.info(f"Discovered built-in plugin '{metadata_obj.name}' at {subfolder}")
+
+            except (PluginDiscoveryError, json.JSONDecodeError) as e:
+                logger.warning(f"Failed to load plugin metadata from {subfolder}: {e}")
+
+        return discovered
+
+    def load_metadata(self, plugin_json_path: Path, installable_path: Path) -> PluginMetadata:
+        """Load and parse plugin metadata JSON."""
+        try:
+            with open(plugin_json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (IOError, json.JSONDecodeError) as e:
+            raise PluginDiscoveryError(f"Failed to parse plugin metadata: {e}") from e
+
+        self.add_to_sys_path(installable_path)
+        data["source"] = str(installable_path)
+        data["module"] = ModuleResolver.from_path(
+            plugin_json_path, installable_path, [self.scholarmis_path]
+        )
+        return PluginMetadata.from_dict(data)
+
+    def create_metadata_from_apps(self, folder_path: Path) -> PluginMetadata:
+        """
+        Create minimal plugin metadata for a folder with apps.py.
+        The name is the folder name, module points to the folder.
+        """
+        self.add_to_sys_path(folder_path)
+        data = {
+            "name": folder_path.name,
+            "module": f"scholarmis.{folder_path.name}",
+            "source": str(folder_path),
+            "version": "0.0.0",
+            "description": f"Built-in Django app {folder_path.name}",
+        }
+        return PluginMetadata.from_dict(data)
+
+
 class FileSystemDiscoverer(PluginDiscoverer):
     
     def __init__(self, search_paths: List[Path], extensions: Optional[List[PluginMetadataExtension]] = None):
@@ -280,11 +368,7 @@ class CompositeDiscoverer(PluginDiscoverer):
     using a pluggable MergeExtension.
     """
 
-    def __init__(self,
-        discoverers: List[PluginDiscoverer],
-        extensions: Optional[List[PluginMetadataExtension]] = None,
-        merge_strategy: Optional[MergeExtension] = None,
-    ):
+    def __init__(self,discoverers: List[PluginDiscoverer], extensions: Optional[List[PluginMetadataExtension]] = None, merge_strategy: Optional[MergeExtension] = None,):
         super().__init__(extensions)
         self.discoverers = discoverers
         self.merge_strategy = merge_strategy or LatestMerge()  # default

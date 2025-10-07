@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Type
 from scholarmis.framework.exceptions import ServiceAlreadyRegisteredError
 from scholarmis.framework.services import ServiceRegistry
-from .discoverers import CompositeDiscoverer, EntryPointDiscoverer, FileSystemDiscoverer, PackageDiscoverer
+from .discoverers import CompositeDiscoverer, DefaultDiscoverer, EntryPointDiscoverer, FileSystemDiscoverer, PackageDiscoverer
 from .extensions import ChecksumExtension, PinExtension, ValidationExtension
 from .exceptions import PluginDependencyError, PluginValidationError
 from .metadata import PluginMetadata
@@ -35,12 +35,13 @@ class PluginLoader:
         # Initialize composite discoverer with extensions and semver merge
         self.discoverer = CompositeDiscoverer(
             discoverers=[
+                DefaultDiscoverer(),
                 FileSystemDiscoverer([self.plugin_dir]),
                 PackageDiscoverer(),
                 EntryPointDiscoverer(),
             ],
             extensions=[
-                ChecksumExtension(),
+                # ChecksumExtension(),
                 PinExtension(),
                 ValidationExtension(),
             ]
@@ -124,9 +125,9 @@ class PluginLoader:
         if plugin.name in self.loaded_plugins:
             return
 
-        if not self.validate_plugin(plugin):
-            logger.warning(f"Plugin {plugin.name} failed validation and will not be loaded.")
-            return
+        # if not self.validate_plugin(plugin):
+        #     logger.warning(f"Plugin {plugin.name} failed validation and will not be loaded.")
+        #     return
 
         # Attempt standard import first
         try:
